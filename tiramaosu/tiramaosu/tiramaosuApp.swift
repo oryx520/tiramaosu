@@ -21,6 +21,7 @@ struct tiramaosuApp: App {
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var panel: NSPanel?
+    private var spaceObserver: NSObjectProtocol?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let panel = TimerOverlayPanel(
@@ -36,7 +37,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panel.hasShadow = true
         panel.isFloatingPanel = true
         panel.level = .screenSaver
-        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        panel.collectionBehavior = [
+            .canJoinAllSpaces,
+            .fullScreenAuxiliary,
+            .moveToActiveSpace,
+            .stationary,
+            .ignoresCycle
+        ]
         panel.isMovableByWindowBackground = true
         panel.titleVisibility = .hidden
         panel.titlebarAppearsTransparent = true
@@ -45,9 +52,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panel.orderFrontRegardless()
 
         self.panel = panel
+
+        spaceObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.activeSpaceDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.bringPanelToFront()
+        }
     }
 
     func applicationDidBecomeActive(_ notification: Notification) {
+        bringPanelToFront()
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        if let spaceObserver {
+            NSWorkspace.shared.notificationCenter.removeObserver(spaceObserver)
+        }
+    }
+
+    private func bringPanelToFront() {
         panel?.level = .screenSaver
         panel?.orderFrontRegardless()
     }
