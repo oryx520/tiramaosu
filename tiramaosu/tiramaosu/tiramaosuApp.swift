@@ -24,7 +24,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let panel = TimerOverlayPanel(
-            contentRect: NSRect(x: 320, y: 320, width: 520, height: 260),
+            contentRect: NSRect(x: 320, y: 320, width: 180, height: 156),
             styleMask: [.borderless, .fullSizeContentView],
             backing: .buffered,
             defer: false
@@ -35,14 +35,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panel.isOpaque = false
         panel.hasShadow = true
         panel.isFloatingPanel = true
-        panel.level = .floating
+        panel.level = .screenSaver
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.isMovableByWindowBackground = true
         panel.titleVisibility = .hidden
         panel.titlebarAppearsTransparent = true
+        panel.hidesOnDeactivate = false
         panel.makeKeyAndOrderFront(nil)
+        panel.orderFrontRegardless()
 
         self.panel = panel
+    }
+
+    func applicationDidBecomeActive(_ notification: Notification) {
+        panel?.level = .screenSaver
+        panel?.orderFrontRegardless()
     }
 }
 
